@@ -12,7 +12,8 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 
 from app.clock import utcnow
-from app.config import BASE_URL, LINE_LOGIN_CHANNEL_ID, LINE_LOGIN_CHANNEL_SECRET
+from app.config import (BASE_URL, LINE_CHANNEL_SECRET, LINE_LOGIN_CHANNEL_ID,
+                        LINE_LOGIN_CHANNEL_SECRET)
 from app.db import get_session
 from app.line_notify import verify_signature
 from app.models import Alert, Product
@@ -125,7 +126,7 @@ async def line_webhook(request: Request):
     body = await request.body()
     sig = request.headers.get("x-line-signature", "")
 
-    if LINE_LOGIN_CHANNEL_SECRET and not verify_signature(body, sig):
+    if LINE_CHANNEL_SECRET and not verify_signature(body, sig):
         raise HTTPException(400, "invalid signature")
 
     events = json.loads(body).get("events", [])
@@ -154,11 +155,9 @@ async def line_webhook(request: Request):
 
 
 def _reply(reply_token: str | None, text: str) -> None:
-    if not reply_token or not LINE_LOGIN_CHANNEL_SECRET:
-        from app.config import LINE_CHANNEL_ACCESS_TOKEN
-        if not LINE_CHANNEL_ACCESS_TOKEN:
-            return
     from app.config import LINE_CHANNEL_ACCESS_TOKEN
+    if not reply_token or not LINE_CHANNEL_ACCESS_TOKEN:
+        return
     try:
         httpx.post(
             "https://api.line.me/v2/bot/message/reply",
