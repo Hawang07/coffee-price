@@ -5,7 +5,7 @@ set -euo pipefail
 
 APP_DIR=/var/www/coffee-price
 APP_USER=coffee
-REPO_URL="https://github.com/YOUR_USER/coffee-price.git"   # แก้ก่อนรัน
+REPO_URL="https://github.com/hawang07/coffee-price.git"
 
 echo "=== 1. system packages ==="
 apt-get update -q

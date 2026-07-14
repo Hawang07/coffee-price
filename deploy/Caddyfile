@@ -1,5 +1,5 @@
 # แทน example.com ด้วย domain จริงก่อน deploy
-example.com {
+hawang07.cloud {
     reverse_proxy 127.0.0.1:8000
 
     # cache static files
