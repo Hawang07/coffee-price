@@ -1,0 +1,19 @@
+# แทน example.com ด้วย domain จริงก่อน deploy
+example.com {
+    reverse_proxy 127.0.0.1:8000
+
+    # cache static files
+    @static {
+        path /static/*
+    }
+    header @static Cache-Control "public, max-age=86400"
+
+    encode gzip
+
+    log {
+        output file /var/log/caddy/coffee-price.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+}

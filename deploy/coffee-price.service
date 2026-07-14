@@ -1,0 +1,22 @@
+[Unit]
+Description=Coffee Price Tracker (FastAPI + uvicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=coffee
+Group=coffee
+WorkingDirectory=/var/www/coffee-price
+EnvironmentFile=/var/www/coffee-price/.env
+ExecStart=/var/www/coffee-price/.venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 2 \
+    --log-level info
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
