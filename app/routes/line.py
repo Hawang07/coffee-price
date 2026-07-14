@@ -131,8 +131,12 @@ async def line_webhook(request: Request):
     events = json.loads(body).get("events", [])
     for event in events:
         etype = event.get("type")
+        uid = event.get("source", {}).get("userId", "")
         if etype == "follow":
-            log.info("new follower: %s", event.get("source", {}).get("userId"))
+            log.info("new follower: %s", uid)
+            _reply(event.get("replyToken"), f"userId ของคุณ: {uid}")
+        elif etype == "message":
+            _reply(event.get("replyToken"), f"userId ของคุณ: {uid}")
         elif etype == "unfollow":
             # deactivate all alerts for this user
             uid = event.get("source", {}).get("userId")
@@ -147,3 +151,20 @@ async def line_webhook(request: Request):
                     s.commit()
 
     return {"status": "ok"}
+
+
+def _reply(reply_token: str | None, text: str) -> None:
+    if not reply_token or not LINE_LOGIN_CHANNEL_SECRET:
+        from app.config import LINE_CHANNEL_ACCESS_TOKEN
+        if not LINE_CHANNEL_ACCESS_TOKEN:
+            return
+    from app.config import LINE_CHANNEL_ACCESS_TOKEN
+    try:
+        httpx.post(
+            "https://api.line.me/v2/bot/message/reply",
+            json={"replyToken": reply_token, "messages": [{"type": "text", "text": text}]},
+            headers={"Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"},
+            timeout=5,
+        )
+    except Exception:
+        pass
