@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category_label }} งบ ฿{{ "{:,}".format(budget) }} แนะนำ{% endblock %}
+{% block description %}รวม{{ category_label }}ที่ดีที่สุด งบไม่เกิน ฿{{ "{:,}".format(budget) }} เรียงตามความคุ้มค่า{% endblock %}
+{% block canonical_path %}/best/{{ category.value }}-{{ budget }}{% endblock %}
+
+{% block content %}
+<h1>{{ category_label }} งบ ฿{{ "{:,}".format(budget) }} แนะนำ</h1>
+<p>เรียงตามความคุ้มค่า — ราคาอัปเดตรายวัน</p>
+
+{% if not cards %}
+<p>ยังไม่มีสินค้าในช่วงราคานี้</p>
+{% endif %}
+
+{% for card in cards %}
+<div class="product-row">
+  <div class="product-row__rank">{{ loop.index }}</div>
+  <div class="product-row__info">
+    <a href="/p/{{ card.product.slug }}"><strong>{{ card.product.name_th }}</strong></a>
+    <div class="product-row__price">฿{{ "{:,}".format(card.min_price) }}</div>
+  </div>
+  <div class="product-row__actions">
+    {% for p in card.prices[:1] %}
+    <a href="/go/{{ p.listing_id }}?src=/best/{{ category.value }}-{{ budget }}"
+       rel="nofollow sponsored" target="_blank" class="btn btn--buy">ดูราคา →</a>
+    {% endfor %}
+    <a href="/p/{{ card.product.slug }}" class="btn btn--detail">รายละเอียด</a>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

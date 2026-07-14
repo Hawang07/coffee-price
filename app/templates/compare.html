@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pa.name_th }} vs {{ pb.name_th }}{% endblock %}
+{% block canonical_path %}/vs/{{ pa.slug }}-vs-{{ pb.slug }}{% endblock %}
+
+{% block content %}
+<h1>{{ pa.name_th }} vs {{ pb.name_th }}</h1>
+
+<div class="compare-grid">
+  <div class="compare-col">
+    <h2><a href="/p/{{ pa.slug }}">{{ pa.name_th }}</a></h2>
+    {% for p in prices_a %}
+    <div class="price-row">
+      <span>{{ p.shop_name }}</span>
+      <span>฿{{ "{:,}".format(p.price) }}</span>
+      <a href="/go/{{ p.listing_id }}?src=/vs/{{ pa.slug }}-vs-{{ pb.slug }}"
+         rel="nofollow sponsored" target="_blank" class="btn btn--buy">ดูราคา →</a>
+    </div>
+    {% endfor %}
+    <dl class="spec">
+      {% for k, v in spec_a.items() %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+    </dl>
+  </div>
+
+  <div class="compare-col">
+    <h2><a href="/p/{{ pb.slug }}">{{ pb.name_th }}</a></h2>
+    {% for p in prices_b %}
+    <div class="price-row">
+      <span>{{ p.shop_name }}</span>
+      <span>฿{{ "{:,}".format(p.price) }}</span>
+      <a href="/go/{{ p.listing_id }}?src=/vs/{{ pa.slug }}-vs-{{ pb.slug }}"
+         rel="nofollow sponsored" target="_blank" class="btn btn--buy">ดูราคา →</a>
+    </div>
+    {% endfor %}
+    <dl class="spec">
+      {% for k, v in spec_b.items() %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+    </dl>
+  </div>
+</div>
+
+<section class="chart-section">
+  <h2>กราฟราคาเปรียบเทียบ</h2>
+  <canvas id="compareChart" height="80"></canvas>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const rawA = {{ chart_a | safe }};
+  const rawB = {{ chart_b | safe }};
+  const toDataset = (raw, label, color) =>
+    Object.values(raw).flat().length ? [{
+      label,
+      data: Object.values(raw).flat().map(d => ({ x: d.day, y: d.min })),
+      borderColor: color, fill: false, tension: 0.2,
+    }] : [];
+
+  const datasets = [
+    ...toDataset(rawA, "{{ pa.name_th }}", "#e67e22"),
+    ...toDataset(rawB, "{{ pb.name_th }}", "#2980b9"),
+  ];
+  if (!datasets.length) return;
+  new Chart(document.getElementById("compareChart"), {
+    type: "line",
+    data: { datasets },
+    options: {
+      parsing: false,
+      scales: {
+        x: { type: "time", time: { unit: "day" } },
+        y: { ticks: { callback: v => "฿" + v.toLocaleString() } }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

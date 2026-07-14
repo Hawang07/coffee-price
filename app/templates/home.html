@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}อุปกรณ์กาแฟราคาถูกที่สุด{% endblock %}
+{% block canonical_path %}/{% endblock %}
+
+{% block content %}
+<h1>ติดตามราคาอุปกรณ์กาแฟไทย</h1>
+<p class="lead">กราฟราคาย้อนหลัง เปรียบเทียบจากหลายร้าน อัปเดตรายวัน</p>
+
+<div class="product-grid">
+  {% for card in cards %}
+  <a href="/p/{{ card.product.slug }}" class="product-card">
+    <div class="product-card__name">{{ card.product.name_th }}</div>
+    <div class="product-card__price">
+      {% if card.min_price %}
+        ฿{{ "{:,}".format(card.min_price) }}
+      {% else %}
+        —
+      {% endif %}
+    </div>
+    <div class="product-card__cat">{{ card.product.category.value }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

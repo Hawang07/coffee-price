@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name_th }} ราคา{% endblock %}
+{% block description %}{{ product.name_th }} ราคาล่าสุด กราฟราคาย้อนหลัง เปรียบเทียบราคาจากหลายร้านค้า{% endblock %}
+{% block canonical_path %}/p/{{ product.slug }}{% endblock %}
+
+{% block head %}
+<script type="application/ld+json">{{ jsonld }}</script>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="/">หน้าแรก</a> › <a href="/brand/{{ brand.slug }}">{{ brand.name }}</a> › {{ product.name_th }}
+</nav>
+
+<h1>{{ product.name_th }} — ราคาล่าสุด</h1>
+
+{% if verdict %}
+<div class="verdict {% if verdict.is_good %}verdict--good{% else %}verdict--neutral{% endif %}">
+  {% if verdict.is_good %}
+    ราคาตอนนี้ต่ำกว่าค่าเฉลี่ย 90 วัน {{ verdict.pct_vs_avg | abs }}% — น่าซื้อตอนนี้
+  {% else %}
+    ราคาตอนนี้สูงกว่าค่าเฉลี่ย 90 วัน {{ verdict.pct_vs_avg }}%
+  {% endif %}
+  &nbsp;|&nbsp; ราคาต่ำสุดเคยอยู่ที่ ฿{{ "{:,}".format(verdict.hist_low) }} ({{ verdict.hist_low_day }})
+</div>
+{% endif %}
+
+<!-- ราคาจากทุกร้าน -->
+<section class="prices">
+  <h2>ราคาเปรียบเทียบ</h2>
+  {% for p in prices %}
+  <div class="price-row {% if not p.in_stock %}price-row--oos{% endif %}">
+    <span class="price-row__shop">{{ p.shop_name }}</span>
+    <span class="price-row__platform">{{ p.platform }}</span>
+    <span class="price-row__price">฿{{ "{:,}".format(p.price) }}</span>
+    <span class="price-row__stock">{{ "มีสินค้า" if p.in_stock else "สินค้าหมด" }}</span>
+    <a class="btn btn--buy" href="/go/{{ p.listing_id }}?src=/p/{{ product.slug }}"
+       rel="nofollow sponsored" target="_blank">ดูราคา →</a>
+  </div>
+  {% else %}
+  <p>ยังไม่มีข้อมูลราคา</p>
+  {% endfor %}
+</section>
+
+<!-- กราฟราคา -->
+<section class="chart-section">
+  <h2>กราฟราคาย้อนหลัง</h2>
+  <div class="chart-tabs">
+    <a href="?chart_days=30"  {% if chart_days == 30  %}class="active"{% endif %}>30 วัน</a>
+    <a href="?chart_days=90"  {% if chart_days == 90  %}class="active"{% endif %}>90 วัน</a>
+    <a href="?chart_days=365" {% if chart_days == 365 %}class="active"{% endif %}>1 ปี</a>
+  </div>
+  <canvas id="priceChart" height="80"></canvas>
+</section>
+
+<!-- สเปก -->
+{% if spec %}
+<section class="spec">
+  <h2>สเปก</h2>
+  <dl>
+    {% for k, v in spec.items() %}
+    <dt>{{ k }}</dt><dd>{{ v }}</dd>
+    {% endfor %}
+  </dl>
+</section>
+{% endif %}
+
+<!-- related compare -->
+{% if related_compares %}
+<section class="related">
+  <h2>เปรียบเทียบกับรุ่นอื่น</h2>
+  <ul>
+    {% for sib in related_compares %}
+    <li><a href="/vs/{{ product.slug }}-vs-{{ sib.slug }}">{{ product.name_th }} vs {{ sib.name_th }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const raw = {{ chart | safe }};
+  const datasets = Object.entries(raw).map(([id, days]) => ({
+    label: "listing " + id,
+    data: days.map(d => ({ x: d.day, y: d.min })),
+    fill: false,
+    tension: 0.2,
+  }));
+  if (!datasets.length) return;
+  new Chart(document.getElementById("priceChart"), {
+    type: "line",
+    data: { datasets },
+    options: {
+      parsing: false,
+      scales: {
+        x: { type: "time", time: { unit: "day" } },
+        y: { ticks: { callback: v => "฿" + v.toLocaleString() } }
+      },
+      plugins: { legend: { display: datasets.length > 1 } }
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Coffee Price{% endblock %} — ราคาอุปกรณ์กาแฟไทย</title>
+  <meta name="description" content="{% block description %}ติดตามราคาอุปกรณ์กาแฟในไทย กราฟราคาย้อนหลัง เปรียบเทียบราคาจากหลายร้าน{% endblock %}">
+  <link rel="canonical" href="{{ base_url }}{% block canonical_path %}/{% endblock %}">
+  <link rel="stylesheet" href="/static/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">Coffee Price TH</a>
+      <nav>
+        <a href="/best/grinder-10000">เครื่องบด</a>
+        <a href="/best/espresso_machine-20000">เครื่องชง</a>
+        <a href="/best/drip_gear-2000">อุปกรณ์ดริป</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>ราคาจาก Shopee / Lazada อัปเดตรายวัน — ลิงก์เป็น affiliate link</p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ brand.name }} ราคาทุกรุ่น{% endblock %}
+{% block canonical_path %}/brand/{{ brand.slug }}{% endblock %}
+
+{% block content %}
+<h1>{{ brand.name }} — ราคาทุกรุ่น</h1>
+
+<div class="product-grid">
+  {% for card in cards %}
+  <a href="/p/{{ card.product.slug }}" class="product-card">
+    <div class="product-card__name">{{ card.product.name_th }}</div>
+    <div class="product-card__price">
+      {% if card.min_price %}฿{{ "{:,}".format(card.min_price) }}{% else %}—{% endif %}
+    </div>
+  </a>
+  {% else %}
+  <p>ยังไม่มีสินค้าในแบรนด์นี้</p>
+  {% endfor %}
+</div>
+{% endblock %}
