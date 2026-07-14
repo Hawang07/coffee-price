@@ -22,85 +22,121 @@
   <a href="/">หน้าแรก</a> › <a href="/brand/{{ brand.slug }}">{{ brand.name }}</a> › {{ product.name_th }}
 </nav>
 
-<h1>{{ product.name_th }} — ราคาล่าสุด</h1>
+<!-- Hero -->
+<div class="product-hero">
+  <div class="product-hero__img">
+    {% set cat_emoji = {"grinder": "⚙️", "espresso_machine": "☕", "auto_machine": "🤖", "drip_gear": "🫗", "scale": "⚖️", "roaster": "🔥"} %}
+    <div class="product-hero__img-placeholder">
+      <span>{{ cat_emoji.get(product.category.value, "📦") }}</span>
+      <p>{{ product.name_th }}</p>
+    </div>
+  </div>
 
-{% if verdict %}
-<div class="verdict {% if verdict.is_good %}verdict--good{% else %}verdict--neutral{% endif %}">
-  {% if verdict.is_good %}
-    ราคาตอนนี้ต่ำกว่าค่าเฉลี่ย 90 วัน {{ verdict.pct_vs_avg | abs }}% — น่าซื้อตอนนี้
-  {% else %}
-    ราคาตอนนี้สูงกว่าค่าเฉลี่ย 90 วัน {{ verdict.pct_vs_avg }}%
-  {% endif %}
-  &nbsp;|&nbsp; ราคาต่ำสุดเคยอยู่ที่ ฿{{ "{:,}".format(verdict.hist_low) }} ({{ verdict.hist_low_day }})
+  <div class="product-hero__info">
+    <h1>{{ product.name_th }}</h1>
+    <p class="product-hero__brand">{{ brand.name }}</p>
+
+    {% if verdict %}
+    <div class="verdict {% if verdict.is_good %}verdict--good{% else %}verdict--neutral{% endif %}">
+      {% if verdict.is_good %}
+        🟢 ราคาต่ำกว่าค่าเฉลี่ย 90 วัน {{ verdict.pct_vs_avg | abs }}% — น่าซื้อตอนนี้
+      {% else %}
+        🟡 ราคาสูงกว่าค่าเฉลี่ย 90 วัน {{ verdict.pct_vs_avg }}%
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if prices %}
+    {% set cheapest = prices[0] %}
+    <div class="hero-price-box">
+      <div class="hero-price-box__label">ราคาถูกสุดตอนนี้</div>
+      <div class="hero-price-box__price">฿{{ "{:,}".format(cheapest.price) }}</div>
+      <div class="hero-price-box__from">จาก {{ cheapest.shop_name }}</div>
+      <a class="btn btn--buy btn--lg" href="/go/{{ cheapest.listing_id }}?src=/p/{{ product.slug }}"
+         rel="nofollow sponsored" target="_blank">ซื้อเลย →</a>
+    </div>
+    {% endif %}
+
+    <!-- แจ้งเตือนราคา -->
+    <div class="alert-section">
+      <p class="alert-desc">🔔 รับแจ้งเตือนผ่าน LINE เมื่อราคาลงถึงที่ต้องการ</p>
+      <form class="alert-form" action="/line/login" method="get">
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="number" name="target_price" min="1"
+               value="{{ prices[0].price if prices else product.msrp or '' }}"
+               placeholder="ราคาเป้าหมาย (บาท)" required>
+        <button type="submit" class="btn btn--line">แจ้งเตือนผ่าน LINE</button>
+      </form>
+    </div>
+  </div>
 </div>
-{% endif %}
 
 <!-- ราคาจากทุกร้าน -->
+{% if prices | length > 1 %}
 <section class="prices">
-  <h2>ราคาเปรียบเทียบ</h2>
+  <h2>เปรียบเทียบราคาทุกร้าน</h2>
   {% for p in prices %}
   <div class="price-row {% if not p.in_stock %}price-row--oos{% endif %}">
     <span class="price-row__shop">{{ p.shop_name }}</span>
-    <span class="price-row__platform">{{ p.platform }}</span>
+    <span class="price-row__platform platform-badge platform-badge--{{ p.platform }}">{{ p.platform }}</span>
     <span class="price-row__price">฿{{ "{:,}".format(p.price) }}</span>
-    <span class="price-row__stock">{{ "มีสินค้า" if p.in_stock else "สินค้าหมด" }}</span>
+    <span class="price-row__stock">{{ "✅ มีสินค้า" if p.in_stock else "❌ หมด" }}</span>
     <a class="btn btn--buy" href="/go/{{ p.listing_id }}?src=/p/{{ product.slug }}"
        rel="nofollow sponsored" target="_blank">ดูราคา →</a>
   </div>
-  {% else %}
-  <p>ยังไม่มีข้อมูลราคา</p>
   {% endfor %}
 </section>
+{% endif %}
 
 <!-- กราฟราคา -->
 <section class="chart-section">
-  <h2>กราฟราคาย้อนหลัง</h2>
-  <div class="chart-tabs">
-    <a href="?chart_days=30"  {% if chart_days == 30  %}class="active"{% endif %}>30 วัน</a>
-    <a href="?chart_days=90"  {% if chart_days == 90  %}class="active"{% endif %}>90 วัน</a>
-    <a href="?chart_days=365" {% if chart_days == 365 %}class="active"{% endif %}>1 ปี</a>
+  <div class="chart-header">
+    <h2>กราฟราคาย้อนหลัง</h2>
+    <div class="chart-tabs">
+      <a href="?chart_days=30"  {% if chart_days == 30  %}class="active"{% endif %}>30 วัน</a>
+      <a href="?chart_days=90"  {% if chart_days == 90  %}class="active"{% endif %}>90 วัน</a>
+      <a href="?chart_days=365" {% if chart_days == 365 %}class="active"{% endif %}>1 ปี</a>
+    </div>
   </div>
-  <canvas id="priceChart" height="80"></canvas>
+  {% set chart_data = chart | tojson if chart else '{}' %}
+  <div class="chart-wrap">
+    <canvas id="priceChart" height="80"></canvas>
+    <div class="chart-empty" id="chartEmpty">
+      <span>📊</span>
+      <p>กำลังรวบรวมข้อมูลราคา</p>
+      <small>กราฟจะแสดงหลังจากระบบเก็บราคาครบ 2 วัน</small>
+    </div>
+  </div>
+  {% if verdict %}
+  <p class="chart-hint">ราคาต่ำสุดที่เคยเห็น: <strong>฿{{ "{:,}".format(verdict.hist_low) }}</strong> ({{ verdict.hist_low_day }})</p>
+  {% endif %}
 </section>
 
-<!-- สเปก -->
-{% if spec %}
-<section class="spec">
-  <h2>สเปก</h2>
-  <dl>
-    {% for k, v in spec.items() %}
-    <dt>{{ k }}</dt><dd>{{ v }}</dd>
-    {% endfor %}
-  </dl>
-</section>
-{% endif %}
+<!-- สเปก + related -->
+<div class="product-lower">
+  {% if spec %}
+  <section class="spec-card">
+    <h2>สเปก</h2>
+    <dl>
+      {% for k, v in spec.items() %}
+      <dt>{{ k }}</dt><dd>{{ v }}</dd>
+      {% endfor %}
+    </dl>
+  </section>
+  {% endif %}
 
-<!-- แจ้งเตือนราคา -->
-<section class="alert-section">
-  <h2>แจ้งเตือนราคา</h2>
-  <p class="alert-desc">รับแจ้งเตือนผ่าน LINE เมื่อราคาลงถึงที่ต้องการ</p>
-  <form class="alert-form" action="/line/login" method="get">
-    <input type="hidden" name="product_id" value="{{ product.id }}">
-    <label>ราคาเป้าหมาย (บาท)
-      <input type="number" name="target_price" min="1"
-             value="{{ prices[0].price if prices else product.msrp or '' }}"
-             required>
-    </label>
-    <button type="submit" class="btn btn--line">แจ้งเตือนผ่าน LINE</button>
-  </form>
-</section>
+  {% if related_compares %}
+  <section class="related">
+    <h2>เปรียบเทียบกับรุ่นอื่น</h2>
+    <ul>
+      {% for sib in related_compares %}
+      <li><a href="/vs/{{ product.slug }}-vs-{{ sib.slug }}">{{ product.name_th }} vs {{ sib.name_th }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
 
-<!-- related compare -->
-{% if related_compares %}
-<section class="related">
-  <h2>เปรียบเทียบกับรุ่นอื่น</h2>
-  <ul>
-    {% for sib in related_compares %}
-    <li><a href="/vs/{{ product.slug }}-vs-{{ sib.slug }}">{{ product.name_th }} vs {{ sib.name_th }}</a></li>
-    {% endfor %}
-  </ul>
-</section>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -112,18 +148,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const datasets = Object.entries(raw).map(([id, days]) => ({
     label: "listing " + id,
     data: days.map(d => ({ x: d.day, y: d.min })),
-    fill: false,
-    tension: 0.2,
+    fill: true,
+    backgroundColor: "rgba(230,126,34,0.08)",
+    borderColor: "#e67e22",
+    borderWidth: 2,
+    pointRadius: 2,
+    tension: 0.3,
   }));
-  if (!datasets.length) return;
+  const empty = document.getElementById("chartEmpty");
+  if (!datasets.length) {
+    if (empty) empty.style.display = "flex";
+    return;
+  }
+  if (empty) empty.style.display = "none";
   new Chart(document.getElementById("priceChart"), {
     type: "line",
     data: { datasets },
     options: {
       parsing: false,
       scales: {
-        x: { type: "time", time: { unit: "day" } },
-        y: { ticks: { callback: v => "฿" + v.toLocaleString() } }
+        x: { type: "time", time: { unit: "day" }, grid: { color: "#f0f0f0" } },
+        y: { ticks: { callback: v => "฿" + v.toLocaleString() }, grid: { color: "#f0f0f0" } }
       },
       plugins: { legend: { display: datasets.length > 1 } }
     }
