@@ -7,6 +7,7 @@ from starlette.templating import Jinja2Templates
 from app.config import CRAWL_ENABLED, CRAWL_HOUR
 from app.db import init_db
 from app.routes import admin, go, pages
+from app.routes import line as line_routes
 
 log = logging.getLogger("main")
 
@@ -18,6 +19,7 @@ templates = Jinja2Templates(directory="app/templates")
 app.include_router(pages.router)
 app.include_router(go.router)
 app.include_router(admin.router)
+app.include_router(line_routes.router)
 
 
 @app.on_event("startup")

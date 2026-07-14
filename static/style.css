@@ -144,6 +144,31 @@ h2 { font-size: 1.2rem; margin: 1.5rem 0 .75rem; }
 .related li { padding: .3rem 0; }
 .related a { color: #2980b9; }
 
+/* Banner (alert set / cancelled) */
+.banner {
+  padding: .75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.25rem;
+  font-size: .95rem;
+}
+.banner--success { background: #eafaf1; border-left: 4px solid #27ae60; color: #1e8449; }
+.banner--neutral { background: #f5f5f5; border-left: 4px solid #bbb; color: #555; }
+
+/* Alert form */
+.alert-section { margin: 2rem 0; }
+.alert-desc { color: #666; font-size: .9rem; margin-bottom: .75rem; }
+.alert-form { display: flex; align-items: flex-end; gap: .75rem; flex-wrap: wrap; }
+.alert-form label { display: flex; flex-direction: column; font-size: .85rem; color: #555; gap: .25rem; }
+.alert-form input[type="number"] {
+  padding: .45rem .7rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 130px;
+}
+.btn--line { background: #06c755; color: #fff; }
+.btn--line:hover { background: #05a847; }
+
 /* Admin table */
 table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
 th, td { padding: .5rem .75rem; text-align: left; border-bottom: 1px solid #eee; font-size: .9rem; }

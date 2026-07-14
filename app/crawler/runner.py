@@ -4,11 +4,11 @@ from app.clock import utcnow
 
 from sqlmodel import select
 
-from app.config import CRAWL_BACKOFF_BASE, CRAWL_MAX_RETRY, LISTING_FAIL_THRESHOLD
+from app.config import BASE_URL, CRAWL_BACKOFF_BASE, CRAWL_MAX_RETRY, LISTING_FAIL_THRESHOLD
 from app.crawler.providers import get_provider
 from app.crawler.rollup import rollup_today
 from app.db import get_session, init_db
-from app.models import CrawlLog, Listing, PriceSnapshot
+from app.models import Alert, CrawlLog, Listing, Product, PriceSnapshot
 
 log = logging.getLogger("crawler")
 BATCH = 50
@@ -78,7 +78,66 @@ def run() -> dict:
         s.commit()
 
     rollup_today()
+    _fire_alerts()
     return stats
+
+
+def _fire_alerts() -> None:
+    """เช็ก alert ที่ active ทั้งหมด — ถ้าราคาปัจจุบัน ≤ target ให้ push LINE"""
+    from app.line_notify import push_price_alert
+
+    with get_session() as s:
+        alerts = s.exec(select(Alert).where(Alert.active == True)).all()  # noqa: E712
+        if not alerts:
+            return
+
+        for alert in alerts:
+            listing = s.exec(
+                select(Listing).where(
+                    Listing.product_id == alert.product_id,
+                    Listing.active == True,  # noqa: E712
+                ).limit(1)
+            ).first()
+            if not listing:
+                continue
+
+            snap = s.exec(
+                select(PriceSnapshot)
+                .where(PriceSnapshot.listing_id == listing.id)
+                .order_by(PriceSnapshot.captured_at.desc())
+                .limit(1)
+            ).first()
+            if not snap or snap.price > alert.target_price:
+                continue
+
+            # หาราคาก่อนหน้า (snapshot ลำดับที่ 2) เพื่อแสดง % ลด
+            prev = s.exec(
+                select(PriceSnapshot)
+                .where(PriceSnapshot.listing_id == listing.id)
+                .order_by(PriceSnapshot.captured_at.desc())
+                .offset(1)
+                .limit(1)
+            ).first()
+            old_price = prev.price if prev else snap.price
+
+            product = s.get(Product, alert.product_id)
+            go_url = f"{BASE_URL}/go/{listing.id}?src=line_alert"
+
+            ok = push_price_alert(
+                line_user_id=alert.line_user_id,
+                product_name=product.name_th,
+                new_price=snap.price,
+                old_price=old_price,
+                go_url=go_url,
+            )
+            if ok:
+                alert.active = False
+                alert.notified_at = utcnow()
+                s.add(alert)
+                log.info("alert fired: product_id=%d user=%s price=%d",
+                         alert.product_id, alert.line_user_id[:8] + "…", snap.price)
+
+        s.commit()
 
 
 if __name__ == "__main__":

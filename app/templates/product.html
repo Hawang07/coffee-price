@@ -9,6 +9,15 @@
 {% endblock %}
 
 {% block content %}
+{% set alert_status = request.query_params.get("alert") %}
+{% if alert_status == "set" %}
+<div class="banner banner--success">
+  ตั้งแจ้งเตือนสำเร็จ — จะแจ้งผ่าน LINE เมื่อราคาลงถึง ฿{{ "{:,}".format(request.query_params.get("price", "0") | int) }}
+</div>
+{% elif alert_status == "cancelled" %}
+<div class="banner banner--neutral">ยกเลิกการตั้งแจ้งเตือนแล้ว</div>
+{% endif %}
+
 <nav class="breadcrumb">
   <a href="/">หน้าแรก</a> › <a href="/brand/{{ brand.slug }}">{{ brand.name }}</a> › {{ product.name_th }}
 </nav>
@@ -65,6 +74,21 @@
   </dl>
 </section>
 {% endif %}
+
+<!-- แจ้งเตือนราคา -->
+<section class="alert-section">
+  <h2>แจ้งเตือนราคา</h2>
+  <p class="alert-desc">รับแจ้งเตือนผ่าน LINE เมื่อราคาลงถึงที่ต้องการ</p>
+  <form class="alert-form" action="/line/login" method="get">
+    <input type="hidden" name="product_id" value="{{ product.id }}">
+    <label>ราคาเป้าหมาย (บาท)
+      <input type="number" name="target_price" min="1"
+             value="{{ prices[0].price if prices else product.msrp or '' }}"
+             required>
+    </label>
+    <button type="submit" class="btn btn--line">แจ้งเตือนผ่าน LINE</button>
+  </form>
+</section>
 
 <!-- related compare -->
 {% if related_compares %}
