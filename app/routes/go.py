@@ -18,6 +18,8 @@ def clickout(listing_id: int, request: Request, src: str = "/"):
         if not listing:
             return RedirectResponse("/", status_code=302)
 
+        affiliate_url = listing.affiliate_url
+
         ua = request.headers.get("user-agent", "")
         ip = request.client.host if request.client else ""
         ua_hash = hashlib.sha256(f"{ua}{ip}".encode()).hexdigest()[:16]
@@ -31,4 +33,4 @@ def clickout(listing_id: int, request: Request, src: str = "/"):
         ))
         s.commit()
 
-    return RedirectResponse(listing.affiliate_url, status_code=302)
+    return RedirectResponse(affiliate_url, status_code=302)
