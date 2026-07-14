@@ -211,6 +211,7 @@ _CATEGORY_LABELS = {
     "auto_machine": "เครื่องชงอัตโนมัติ",
     "drip_gear": "อุปกรณ์ดริป",
     "scale": "เครื่องชั่ง",
+    "roaster": "เครื่องคั่วกาแฟ",
 }
 
 

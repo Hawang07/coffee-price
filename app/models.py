@@ -13,6 +13,7 @@ class Category(str, Enum):
     AUTO_MACHINE = "auto_machine"
     DRIP_GEAR = "drip_gear"
     SCALE = "scale"
+    ROASTER = "roaster"                # เครื่องคั่วกาแฟ
 
 
 class Platform(str, Enum):
