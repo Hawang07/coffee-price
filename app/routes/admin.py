@@ -42,8 +42,7 @@ def stats(request: Request, days: int = 30, _=Depends(_auth)):
             .order_by(func.count(Clickout.id).desc())
         ).all()
 
-    return templates.TemplateResponse("admin/stats.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "admin/stats.html", {
         "rows": rows,
         "days": days,
     })

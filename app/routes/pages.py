@@ -106,7 +106,7 @@ def home(request: Request):
             prices = _latest_prices(s, p.id)
             cards.append({"product": p, "min_price": prices[0]["price"] if prices else None})
 
-    return templates.TemplateResponse("home.html", {"request": request, "cards": cards})
+    return templates.TemplateResponse(request, "home.html", {"cards": cards})
 
 
 # ── Product ───────────────────────────────────────────────────────────────────
@@ -156,8 +156,7 @@ def product_page(slug: str, request: Request, chart_days: int = 90):
                     related_compares.append(sib)
             related_compares = related_compares[:5]
 
-    return templates.TemplateResponse("product.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "product.html", {
         "product": product,
         "brand": brand,
         "prices": prices,
@@ -194,8 +193,7 @@ def compare_page(slugs: str, request: Request):
         spec_a = json.loads(pa.spec) if pa.spec else {}
         spec_b = json.loads(pb.spec) if pb.spec else {}
 
-    return templates.TemplateResponse("compare.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "compare.html", {
         "pa": pa, "pb": pb,
         "prices_a": prices_a, "prices_b": prices_b,
         "chart_a": json.dumps(chart_a, ensure_ascii=False),
@@ -236,8 +234,7 @@ def best_page(category: str, budget: int, request: Request):
 
     cards.sort(key=lambda c: c["product"].expected_commission or 0, reverse=True)
 
-    return templates.TemplateResponse("best.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "best.html", {
         "category": cat,
         "category_label": _CATEGORY_LABELS.get(category, category),
         "budget": budget,
@@ -264,8 +261,7 @@ def brand_page(slug: str, request: Request):
             prices = _latest_prices(s, p.id)
             cards.append({"product": p, "min_price": prices[0]["price"] if prices else None})
 
-    return templates.TemplateResponse("brand.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "brand.html", {
         "brand": brand,
         "cards": cards,
         "base_url": BASE_URL,
