@@ -26,10 +26,14 @@
 <div class="product-hero">
   <div class="product-hero__img">
     {% set cat_emoji = {"grinder": "⚙️", "espresso_machine": "☕", "auto_machine": "🤖", "drip_gear": "🫗", "scale": "⚖️", "roaster": "🔥"} %}
-    <div class="product-hero__img-placeholder">
-      <span>{{ cat_emoji.get(product.category.value, "📦") }}</span>
-      <p>{{ product.name_th }}</p>
-    </div>
+    {% if product_image %}
+      <img class="product-hero__img-real" src="{{ product_image }}" alt="{{ product.name_th }}" loading="lazy">
+    {% else %}
+      <div class="product-hero__img-placeholder">
+        <span>{{ cat_emoji.get(product.category.value, "📦") }}</span>
+        <p>{{ product.name_th }}</p>
+      </div>
+    {% endif %}
   </div>
 
   <div class="product-hero__info">

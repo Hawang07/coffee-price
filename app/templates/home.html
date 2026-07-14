@@ -10,6 +10,11 @@
 <div class="product-grid">
   {% for card in cards %}
   <a href="/p/{{ card.product.slug }}" class="product-card {% if not card.has_real %}product-card--mock{% endif %}">
+    {% if card.image_url %}
+      <div class="product-card__thumb">
+        <img src="{{ card.image_url }}" alt="{{ card.product.name_th }}" loading="lazy">
+      </div>
+    {% endif %}
     <div class="product-card__badge">
       {% if card.has_real %}
         <span class="badge badge--live">● Live</span>

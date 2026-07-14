@@ -51,6 +51,7 @@ class Listing(SQLModel, table=True):
     item_id: str
     shop_name: Optional[str] = None
     affiliate_url: str
+    image_url: Optional[str] = None
     active: bool = Field(default=True, index=True)
     fail_streak: int = Field(default=0)
     last_seen_at: Optional[datetime] = None

@@ -40,6 +40,7 @@ def _latest_prices(s, product_id: int) -> list[dict]:
                 "price": snap.price,
                 "in_stock": snap.in_stock,
                 "affiliate_url": lst.affiliate_url,
+                "image_url": lst.image_url,
             })
     result.sort(key=lambda x: x["price"])
     return result
@@ -105,10 +106,12 @@ def home(request: Request):
         for p in products:
             prices = _latest_prices(s, p.id)
             has_real = any(not pr["affiliate_url"].startswith("https://example.invalid") for pr in prices)
+            image_url = next((pr["image_url"] for pr in prices if pr.get("image_url")), None)
             cards.append({
                 "product": p,
                 "min_price": prices[0]["price"] if prices else None,
                 "has_real": has_real,
+                "image_url": image_url,
             })
         # เรียง real listings ขึ้นก่อน
         cards.sort(key=lambda c: (not c["has_real"], -(c["product"].expected_commission or 0)))
@@ -134,11 +137,14 @@ def product_page(slug: str, request: Request, chart_days: int = 90):
 
         spec = json.loads(product.spec) if product.spec else {}
 
+        # รูปสินค้าจาก listing ที่ถูกสุด (หรือ listing แรกที่มีรูป)
+        product_image = next((p["image_url"] for p in prices if p.get("image_url")), None)
+
         jsonld = product_jsonld(
             name=product.name_th,
             slug=product.slug,
             base_url=BASE_URL,
-            image=None,
+            image=product_image,
             offers=[
                 {"price": p["price"], "url": p["affiliate_url"], "seller": p["shop_name"]}
                 for p in prices if p["in_stock"]
@@ -167,6 +173,7 @@ def product_page(slug: str, request: Request, chart_days: int = 90):
         "product": product,
         "brand": brand,
         "prices": prices,
+        "product_image": product_image,
         "chart": json.dumps(chart, ensure_ascii=False),
         "chart_days": chart_days,
         "verdict": verdict,

@@ -20,5 +20,6 @@ jobs:
             git config --global --add safe.directory /var/www/coffee-price
             git pull origin main
             sudo -u coffee .venv/bin/pip install -r requirements.txt -q
+            sudo -u coffee .venv/bin/python -m app.migrate
             systemctl restart coffee-price
             systemctl is-active coffee-price
