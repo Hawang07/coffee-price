@@ -104,9 +104,15 @@ h2 { font-size: 1.2rem; margin: 1.5rem 0 .75rem; }
   transition: box-shadow .15s;
 }
 .product-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+.product-card--mock { opacity: .75; }
+.product-card__badge { margin-bottom: .4rem; }
 .product-card__name { font-weight: 600; margin-bottom: .5rem; font-size: .95rem; }
 .product-card__price { color: #e67e22; font-weight: 700; }
 .product-card__cat { font-size: .75rem; color: #aaa; margin-top: .25rem; }
+
+.badge { font-size: .7rem; padding: .15rem .5rem; border-radius: 20px; font-weight: 600; }
+.badge--live { background: #eafaf1; color: #27ae60; }
+.badge--soon { background: #f5f5f5; color: #999; }
 
 /* Product row (best-of) */
 .product-row {

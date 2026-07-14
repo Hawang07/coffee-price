@@ -9,7 +9,14 @@
 
 <div class="product-grid">
   {% for card in cards %}
-  <a href="/p/{{ card.product.slug }}" class="product-card">
+  <a href="/p/{{ card.product.slug }}" class="product-card {% if not card.has_real %}product-card--mock{% endif %}">
+    <div class="product-card__badge">
+      {% if card.has_real %}
+        <span class="badge badge--live">● Live</span>
+      {% else %}
+        <span class="badge badge--soon">เร็วๆ นี้</span>
+      {% endif %}
+    </div>
     <div class="product-card__name">{{ card.product.name_th }}</div>
     <div class="product-card__price">
       {% if card.min_price %}
@@ -18,7 +25,7 @@
         —
       {% endif %}
     </div>
-    <div class="product-card__cat">{{ card.product.category.value }}</div>
+    <div class="product-card__cat">{{ card.product.category.value.replace("_", " ") }}</div>
   </a>
   {% endfor %}
 </div>

@@ -33,4 +33,8 @@ def clickout(listing_id: int, request: Request, src: str = "/"):
         ))
         s.commit()
 
+    # mock listings ยังไม่มี affiliate URL จริง
+    if affiliate_url.startswith("https://example.invalid"):
+        return RedirectResponse("/", status_code=302)
+
     return RedirectResponse(affiliate_url, status_code=302)

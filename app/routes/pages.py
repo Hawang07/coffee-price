@@ -104,7 +104,14 @@ def home(request: Request):
         cards = []
         for p in products:
             prices = _latest_prices(s, p.id)
-            cards.append({"product": p, "min_price": prices[0]["price"] if prices else None})
+            has_real = any(not pr["affiliate_url"].startswith("https://example.invalid") for pr in prices)
+            cards.append({
+                "product": p,
+                "min_price": prices[0]["price"] if prices else None,
+                "has_real": has_real,
+            })
+        # เรียง real listings ขึ้นก่อน
+        cards.sort(key=lambda c: (not c["has_real"], -(c["product"].expected_commission or 0)))
 
     return templates.TemplateResponse(request, "home.html", {"cards": cards})
 
