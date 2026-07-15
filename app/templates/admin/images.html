@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <title>Admin — รูปสินค้า</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .img-row { display:flex; align-items:center; gap:1rem; padding:.75rem 0; border-bottom:1px solid #eee; }
+    .img-thumb { width:80px; height:80px; object-fit:contain; border:1px solid #eee; border-radius:6px; background:#f8f8f8; flex-shrink:0; }
+    .img-placeholder { width:80px; height:80px; display:grid; place-items:center; border:1px dashed #ccc; border-radius:6px; color:#bbb; font-size:.7rem; flex-shrink:0; }
+    .img-info { flex:1; min-width:0; }
+    .img-info h3 { margin:0 0 .25rem; font-size:.95rem; }
+    .img-info small { color:#666; font-size:.75rem; word-break:break-all; }
+    .img-form { display:flex; gap:.5rem; margin-top:.4rem; }
+    .img-form input[type=url] { flex:1; padding:.35rem .5rem; border:1px solid #ccc; border-radius:4px; font-size:.85rem; }
+    .img-form button { padding:.35rem .8rem; background:#2563eb; color:#fff; border:none; border-radius:4px; cursor:pointer; white-space:nowrap; }
+    .img-form button:hover { background:#1d4ed8; }
+    .badge-ok { color:#16a34a; font-weight:600; }
+    .badge-no { color:#dc2626; }
+    h1 { margin-bottom:1.5rem; }
+    .nav { margin-bottom:1rem; }
+    .alert-ok { background:#dcfce7; border:1px solid #86efac; color:#15803d; padding:.5rem 1rem; border-radius:4px; margin-bottom:1rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="nav"><a href="/admin/stats">← Stats</a></div>
+  <h1>รูปสินค้า ({{ listings|length }} listing)</h1>
+
+  {% if saved %}
+  <div class="alert-ok">บันทึกแล้ว — listing {{ saved }}</div>
+  {% endif %}
+
+  <p style="color:#666;font-size:.85rem">
+    วิธีหา URL รูป Shopee: เปิดหน้าสินค้า → คลิกขวาที่รูปหลัก → "เปิดรูปภาพในแท็บใหม่" → copy URL<br>
+    URL จะขึ้นต้นด้วย <code>https://down-th.img.susercontent.com/file/…</code>
+  </p>
+
+  {% for row in listings %}
+  <div class="img-row">
+    {% if row.image_url %}
+      <img class="img-thumb" src="{{ row.image_url }}" alt="{{ row.name_th }}" loading="lazy" onerror="this.style.display='none'">
+    {% else %}
+      <div class="img-placeholder">ไม่มีรูป</div>
+    {% endif %}
+    <div class="img-info">
+      <h3>
+        {{ row.name_th }}
+        {% if row.image_url %}<span class="badge-ok">✓</span>{% else %}<span class="badge-no">✗ ยังไม่มีรูป</span>{% endif %}
+      </h3>
+      <small>
+        listing #{{ row.listing_id }} · {{ row.platform }} ·
+        <a href="{{ row.url }}" target="_blank" rel="noopener">เปิดหน้าสินค้า →</a>
+      </small>
+      {% if row.image_url %}
+      <br><small style="color:#888">{{ row.image_url }}</small>
+      {% endif %}
+      <form class="img-form" method="post" action="/admin/images/{{ row.listing_id }}">
+        <input type="url" name="image_url" placeholder="วาง URL รูปที่นี่" value="{{ row.image_url or '' }}">
+        <button type="submit">บันทึก</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+</body>
+</html>

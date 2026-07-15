@@ -1,14 +1,14 @@
 import secrets
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlmodel import func, select
 
 from app.config import ADMIN_PASS, ADMIN_USER
 from app.db import get_session
-from app.models import Clickout, Listing, Product
+from app.models import Clickout, Listing, Platform, Product
 from app.templates_env import templates
 
 router = APIRouter(prefix="/admin")
@@ -45,3 +45,42 @@ def stats(request: Request, days: int = 30, _=Depends(_auth)):
         "rows": rows,
         "days": days,
     })
+
+
+@router.get("/images", response_class=HTMLResponse)
+def images_get(request: Request, saved: int = 0, _=Depends(_auth)):
+    with get_session() as s:
+        rows_raw = s.exec(
+            select(Listing, Product)
+            .join(Product, Listing.product_id == Product.id)
+            .where(Listing.active == True)  # noqa: E712
+            .order_by(Listing.image_url.is_(None).desc(), Product.name_th)
+        ).all()
+
+        listings = [
+            {
+                "listing_id": lst.id,
+                "name_th": prod.name_th,
+                "platform": lst.platform.value,
+                "url": lst.affiliate_url,
+                "image_url": lst.image_url,
+            }
+            for lst, prod in rows_raw
+        ]
+
+    return templates.TemplateResponse(request, "admin/images.html", {
+        "listings": listings,
+        "saved": saved or None,
+    })
+
+
+@router.post("/images/{listing_id}")
+def images_post(listing_id: int, image_url: str = Form(""), _=Depends(_auth)):
+    with get_session() as s:
+        lst = s.get(Listing, listing_id)
+        if not lst:
+            raise HTTPException(404)
+        lst.image_url = image_url.strip() or None
+        s.add(lst)
+        s.commit()
+    return RedirectResponse(f"/admin/images?saved={listing_id}", status_code=303)
