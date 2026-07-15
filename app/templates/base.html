@@ -6,6 +6,9 @@
   <title>{% block title %}Coffee Price{% endblock %} — ราคาอุปกรณ์กาแฟไทย</title>
   <meta name="description" content="{% block description %}ติดตามราคาอุปกรณ์กาแฟในไทย กราฟราคาย้อนหลัง เปรียบเทียบราคาจากหลายร้าน{% endblock %}">
   <link rel="canonical" href="{{ base_url }}{% block canonical_path %}/{% endblock %}">
+  {% if google_site_verification %}
+  <meta name="google-site-verification" content="{{ google_site_verification }}">
+  {% endif %}
   <link rel="stylesheet" href="/static/style.css">
   {% block head %}{% endblock %}
 </head>
