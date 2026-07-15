@@ -4,16 +4,15 @@ from datetime import date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.templating import Jinja2Templates
 from sqlmodel import func, select
 
 from app.config import ADMIN_PASS, ADMIN_USER
 from app.db import get_session
 from app.models import Clickout, Listing, Product
+from app.templates_env import templates
 
 router = APIRouter(prefix="/admin")
 security = HTTPBasic()
-templates = Jinja2Templates(directory="app/templates")
 
 
 def _auth(credentials: HTTPBasicCredentials = Depends(security)):

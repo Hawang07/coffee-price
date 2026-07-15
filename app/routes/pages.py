@@ -4,7 +4,6 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 
 from app.config import BASE_URL
@@ -12,10 +11,10 @@ from app.db import get_session
 from app.models import Brand, Category, Listing, PriceDaily, PriceSnapshot, Product
 from app.seo.jsonld import product_jsonld
 from app.seo.sitemap import router as sitemap_router
+from app.templates_env import templates
 
 router = APIRouter()
 router.include_router(sitemap_router)
-templates = Jinja2Templates(directory="app/templates")
 
 
 def _latest_prices(s, product_id: int) -> list[dict]:

@@ -10,7 +10,6 @@ from urllib.parse import urlencode
 import httpx
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 
 from app.clock import utcnow
@@ -20,8 +19,9 @@ from app.db import get_session
 from app.line_notify import verify_signature
 from app.models import Alert, Product
 
+from app.templates_env import templates
+
 router = APIRouter(prefix="/line")
-templates = Jinja2Templates(directory="app/templates")
 log = logging.getLogger("line")
 
 # state token store: {token: {"product_id": int, "target_price": int, "exp": float}}

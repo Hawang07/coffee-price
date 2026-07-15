@@ -2,9 +2,8 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from starlette.templating import Jinja2Templates
 
-from app.config import CRAWL_ENABLED, CRAWL_HOUR, GOOGLE_SITE_VERIFICATION
+from app.config import CRAWL_ENABLED, CRAWL_HOUR
 from app.db import init_db
 from app.routes import admin, go, pages
 from app.routes import line as line_routes
@@ -13,9 +12,6 @@ log = logging.getLogger("main")
 
 app = FastAPI(title="Coffee Price Tracker", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-templates = Jinja2Templates(directory="app/templates")
-templates.env.globals["google_site_verification"] = GOOGLE_SITE_VERIFICATION
 
 app.include_router(pages.router)
 app.include_router(go.router)
